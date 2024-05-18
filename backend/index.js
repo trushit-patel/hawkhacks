@@ -5,6 +5,7 @@ const bodyParser = require("body-parser");
 const multer = require("multer");
 const pdfParse = require("pdf-parse");
 const { GoogleGenerativeAI } = require("@google/generative-ai");
+
 const genAI = new GoogleGenerativeAI(process.env.GOOGLE_API_KEY);
 
 const app = express();
@@ -62,21 +63,43 @@ async function handleResumeRating(req, res) {
     // Generate content using the generative model
     const response = await model.generateContent(prompt);
 
-    // Extract text from the generated response
-    const textBody = response.candidates[0].content.parts[0].text;
-    console.log(textBody);
+    // Log the entire response to understand its structure
+    console.log("Full response:", JSON.stringify(response, null, 2));
 
-    // Send the generated text as response
-    res.send(textBody);
+    // Ensure the response structure is as expected
+    const candidates = response.response.candidates;
+    if (candidates && candidates.length > 0) {
+      const firstCandidate = candidates[0];
+      if (firstCandidate && firstCandidate.content && firstCandidate.content.parts && firstCandidate.content.parts.length > 0) {
+        // Extract text from the generated response
+        const textBody = firstCandidate.content.parts[0].text;
+        console.log(textBody);
+
+        // Send the generated text as response
+        res.send(textBody);
+      } else {
+        console.error("Unexpected candidate structure:", firstCandidate);
+        res.status(500).send("Unexpected candidate structure from AI model");
+      }
+    } else {
+      console.error("Unexpected response structure:", response);
+      res.status(500).send("Unexpected response structure from AI model");
+    }
   } catch (error) {
     console.error("Error processing request:", error);
     res.status(500).send("Error processing request");
   }
 }
 
-async function handleCoverLetterGeneration(req, res) {}
 
-async function handleJobRolesSuggestion(req, res) {}
+
+async function handleCoverLetterGeneration(req, res) {
+  // Implementation for cover letter generation
+}
+
+async function handleJobRolesSuggestion(req, res) {
+  // Implementation for job roles suggestion
+}
 
 app.post("/rate-resume", upload.single("resume"), handleResumeRating);
 app.post(
