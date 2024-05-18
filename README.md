@@ -8,8 +8,8 @@ Columbus is an innovative portal designed for job seekers, offering comprehensiv
 
 - **Trushit Patel (Wilfrid Laurier University)** - Backend Developer & Team Lead
 - **Jainish Patel (McMaster University)** - Frontend Developer & UI/UX Designer
-- **Anmol Dhiman (Humber College)** - Backend Developer, Blockchain Specialist & Neurelo Integration
-- **Mohammad Abdul Malik Fazal (Wilfrid Laurier University)** - Backend Developer & Database Manager
+- **Anmol Dhiman (Humber College)** - Backend Developer, Blockchain Specialist & Neurelo Integrator
+- **Mohammad Abdul Malik Fazal (Wilfrid Laurier University)** - Backend Developer & Database Manager ( Sleeps 12 hours and doesn't come on time)  
 
 ## Technologies Used
 
