@@ -1,3 +1,10 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+body {
+  font-family: "Nunito", sans-serif;
+  background-color: #ffebb2;
+  margin: 0;
+  padding: 0;
+}
