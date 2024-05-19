@@ -20,7 +20,7 @@ function JobRoleSuggester() {
     setResponseText(""); // Clear previous response
 
     try {
-      const response = await fetch("http://localhost:5000/job-roles-suggest", {
+      const response = await fetch("http://localhost:3000/job-roles-suggest", {
         method: "POST",
         body: formData,
       });
