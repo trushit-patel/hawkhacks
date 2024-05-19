@@ -7,13 +7,9 @@ const pdfParse = require("pdf-parse");
 const { GoogleGenerativeAI } = require("@google/generative-ai");
 const { registerUser, loginUser, logoutUser, refreshToken, getProfile } = require("./user-auth");
 
-<<<<<<< HEAD
 const genAI = new GoogleGenerativeAI(process.env.GOOGLE_API_KEY);
 const mongoose = require('./models/user');
 const verifyJWT = require('./middlewares/auth');
-=======
-const genAI = new GoogleGenerativeAI("AIzaSyDFR427aryIYYUpMfVSK4DbBxKPOJ9yh2c");
->>>>>>> 4343ea820b2c845b306bf2650faec1f9966bc53c
 
 const app = express();
 app.use(
@@ -190,17 +186,11 @@ app.post(
   handleJobRolesSuggestion
 );
 
-<<<<<<< HEAD
 app.post("/register", registerUser);
 app.post("/login", loginUser);
 app.post("/logout", verifyJWT, logoutUser);
 app.post("/refresh-token",verifyJWT, refreshToken);
 app.get("/profile",verifyJWT, getProfile);
-=======
-app.post("/test", (req, res) => {
-  res.status(200).send("Hello World");
-});
->>>>>>> 4343ea820b2c845b306bf2650faec1f9966bc53c
 
 const port = process.env.PORT || 5000;
 app.listen(port, () => {
