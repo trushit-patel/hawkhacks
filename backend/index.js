@@ -6,7 +6,7 @@ const multer = require("multer");
 const pdfParse = require("pdf-parse");
 const { GoogleGenerativeAI } = require("@google/generative-ai");
 
-const genAI = new GoogleGenerativeAI(process.env.GOOGLE_API_KEY);
+const genAI = new GoogleGenerativeAI('AIzaSyDFR427aryIYYUpMfVSK4DbBxKPOJ9yh2c');
 
 const app = express();
 app.use(
@@ -127,7 +127,51 @@ async function rewriteCoverLetter(pdfTextArray, jobDescription) {
 }
 
 async function handleJobRolesSuggestion(req, res) {
-  // Implementation for job roles suggestion
+  try {
+    const resume = req.file;
+
+    if (!resume) {
+      return res.status(400).send("No file uploaded");
+    }
+
+    const result = await pdfParse(resume.buffer);
+
+    const pdfTextArray = result.text
+      .split("\n")
+      .map((line) => line.trim())
+      .filter((line) => line.length > 0);
+
+    const model = await genAI.getGenerativeModel({
+      model: "gemini-1.5-flash-latest",
+    });
+
+    const prompt = "Read the attached resume and Give job role suggestions(with descriptions and reasons) accordingly (no need to give context or add considerations or tips)\n\n" + pdfTextArray.join("\n\n");
+
+    const response = await model.generateContent(prompt);
+    const candidates = response.response.candidates;
+    if (candidates && candidates.length > 0) {
+      const firstCandidate = candidates[0];
+      if (
+        firstCandidate &&
+        firstCandidate.content &&
+        firstCandidate.content.parts &&
+        firstCandidate.content.parts.length > 0
+      ) {
+        const textBody = firstCandidate.content.parts[0].text;
+
+        res.status(200).send(textBody);
+      } else {
+        console.error("Unexpected candidate structure:", firstCandidate);
+        res.status(500).send("Unexpected candidate structure from AI model");
+      }
+    } else {
+      console.error("Unexpected response structure:", response);
+      res.status(500).send("Unexpected response structure from AI model");
+    }
+  } catch (error) {
+    console.error("Error processing request:", error);
+    res.status(500).send("Error processing request");
+  }
 }
 
 app.post("/reveiw-resume", upload.single("resume"), handleResumeRating);
