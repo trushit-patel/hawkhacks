@@ -7,9 +7,13 @@ const pdfParse = require("pdf-parse");
 const { GoogleGenerativeAI } = require("@google/generative-ai");
 const { registerUser, loginUser, logoutUser, refreshToken, getProfile } = require("./user-auth");
 
+<<<<<<< HEAD
 const genAI = new GoogleGenerativeAI(process.env.GOOGLE_API_KEY);
 const mongoose = require('./models/user');
 const verifyJWT = require('./middlewares/auth');
+=======
+const genAI = new GoogleGenerativeAI("AIzaSyDFR427aryIYYUpMfVSK4DbBxKPOJ9yh2c");
+>>>>>>> 4343ea820b2c845b306bf2650faec1f9966bc53c
 
 const app = express();
 app.use(
@@ -20,6 +24,7 @@ app.use(
 );
  
 app.use(express.json({ limit: "16kb" }));
+app.use(bodyParser.json());
 app.use(express.urlencoded({ extended: true, limit: "16kb" }));
 app.use(express.static("public"));
 app.use(cookieParser());
@@ -87,61 +92,97 @@ async function handleResumeRating(req, res) {
 }
 
 async function handleCoverLetterGeneration(req, res) {
-  if (!req.file || !req.body.jobDescription) {
+  const { coverLetter, jobDescription } = req.body;
+
+  if (!coverLetter || !jobDescription) {
     res.status(400).send("Missing required inputs");
     return;
   }
 
   try {
-    const pdfData = await pdfParse(req.file.buffer);
-    const pdfTextArray = pdfData.text
+    // Sanitize input by removing any control characters
+    const sanitizeInput = (input) => input.replace(/[\x00-\x1F\x7F-\x9F]/g, "");
+
+    const sanitizedCoverLetter = sanitizeInput(coverLetter);
+    const sanitizedJobDescription = sanitizeInput(jobDescription);
+
+    // Split the cover letter into an array of trimmed, non-empty lines
+    const coverLetterArray = sanitizedCoverLetter
       .split("\n")
       .map((line) => line.trim())
       .filter((line) => line.length > 0);
-    const jobDescription = req.body.jobDescription;
 
-    const rewrittenCoverLetter = await rewriteCoverLetter(
-      pdfTextArray,
-      jobDescription
-    );
+    const model = await genAI.getGenerativeModel({
+      model: "gemini-1.5-flash-latest",
+    });
+
+    const prompt = `Rewrite the following cover letter based on this job description:\n\nJob Description:\n${sanitizedJobDescription}\n\nCover Letter:\n${coverLetterArray.join(
+      "\n\n"
+    )}`;
+
+    const result = await model.generateContent(prompt);
+    const rewrittenCoverLetter = result.response;
     const textBody = rewrittenCoverLetter.candidates[0].content.parts[0].text;
-    console.log(textBody);
+
     res.status(200).send(textBody);
-  } catch (err) {
-    console.error("Error:", err);
+  } catch (error) {
+    console.error("Error generating content:", error);
     res.status(500).send("Error rewriting cover letter");
   }
 }
-async function rewriteCoverLetter(pdfTextArray, jobDescription) {
-  const model = await genAI.getGenerativeModel({
-    model: "gemini-1.5-flash-latest",
-  });
-  const prompt = `Rewrite the following cover letter based on this job description:\n\nJob Description:\n${jobDescription}\n\nCover Letter:\n${pdfTextArray.join(
-    "\n\n"
-  )}`;
-
+async function handleJobRolesSuggestion(req, res) {
   try {
-    const result = await model.generateContent(prompt);
-    return result.response;
+    const resume = req.file;
+
+    if (!resume) {
+      return res.status(400).send("No file uploaded");
+    }
+
+    const result = await pdfParse(resume.buffer);
+
+    const pdfTextArray = result.text
+      .split("\n")
+      .map((line) => line.trim())
+      .filter((line) => line.length > 0);
+
+    const model = await genAI.getGenerativeModel({
+      model: "gemini-1.5-flash-latest",
+    });
+
+    const prompt =
+      "Read the attached resume and Give job role suggestions(with descriptions and reasons) accordingly (no need to give context or add considerations or tips)\n\n" +
+      pdfTextArray.join("\n\n");
+
+    const response = await model.generateContent(prompt);
+    const candidates = response.response.candidates;
+    if (candidates && candidates.length > 0) {
+      const firstCandidate = candidates[0];
+      if (
+        firstCandidate &&
+        firstCandidate.content &&
+        firstCandidate.content.parts &&
+        firstCandidate.content.parts.length > 0
+      ) {
+        const textBody = firstCandidate.content.parts[0].text;
+
+        res.status(200).send(textBody);
+      } else {
+        console.error("Unexpected candidate structure:", firstCandidate);
+        res.status(500).send("Unexpected candidate structure from AI model");
+      }
+    } else {
+      console.error("Unexpected response structure:", response);
+      res.status(500).send("Unexpected response structure from AI model");
+    }
   } catch (error) {
-    console.error("Error generating content:", error);
-    throw error;
+    console.error("Error processing request:", error);
+    res.status(500).send("Error processing request");
   }
 }
 
-async function handleJobRolesSuggestion(req, res) {
-  // Implementation for job roles suggestion
-}
-
 app.post("/reveiw-resume", upload.single("resume"), handleResumeRating);
-app.post("/test", (req, res) => {
-  res.status(200).send("Hello World");
-});
-app.post(
-  "/rewrite-cover-letter",
-  upload.single("coverLetter"),
-  handleCoverLetterGeneration
-);
+
+app.post("/rewrite-cover-letter", handleCoverLetterGeneration);
 
 app.post(
   "/job-roles-suggest",
@@ -149,11 +190,17 @@ app.post(
   handleJobRolesSuggestion
 );
 
+<<<<<<< HEAD
 app.post("/register", registerUser);
 app.post("/login", loginUser);
 app.post("/logout", verifyJWT, logoutUser);
 app.post("/refresh-token",verifyJWT, refreshToken);
 app.get("/profile",verifyJWT, getProfile);
+=======
+app.post("/test", (req, res) => {
+  res.status(200).send("Hello World");
+});
+>>>>>>> 4343ea820b2c845b306bf2650faec1f9966bc53c
 
 const port = process.env.PORT || 5000;
 app.listen(port, () => {

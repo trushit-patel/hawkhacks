@@ -8,6 +8,9 @@ import JobTracker from "./pages/JobTracker.jsx";
 import "./index.css";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import App from "./App.jsx";
+import Login from "./pages/Login.jsx";
+import SignUp from "./pages/SignUp.jsx";
+import Footer from "./components/Footer.jsx";
 
 const router = createBrowserRouter([
   {
@@ -15,11 +18,30 @@ const router = createBrowserRouter([
     element: <App />,
     children: [
       { path: "/", element: <HomePage /> },
+
       { path: "/resume-reviewer", element: <ResumeReviewer /> },
       { path: "/cover-letter-generator", element: <CoverLetterGenerator /> },
       { path: "/job-suggestions", element: <JobSuggestions /> },
       { path: "/job-tracker", element: <JobTracker /> },
     ],
+  },
+  {
+    path: "/login",
+    element: (
+      <>
+        <Login />
+        <Footer />
+      </>
+    ),
+  },
+  {
+    path: "/signup",
+    element: (
+      <>
+        <SignUp />
+        <Footer />
+      </>
+    ),
   },
 ]);
 

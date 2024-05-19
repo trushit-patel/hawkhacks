@@ -14,6 +14,15 @@ function Header() {
               <img className="h-16" src={Logo} alt="Logo" />
             </NavLink>
           </div>
+          <div className="flex-grow" />
+          <div className="flex items-center">
+            <NavLink
+              to="/login"
+              className="text-white font-bold px-4 py-2 rounded-full bg-purple-600 hover:bg-purple-500"
+            >
+              Login
+            </NavLink>
+          </div>
         </div>
       </div>
     </nav>
