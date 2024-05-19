@@ -9,7 +9,7 @@ Columbus is an innovative portal designed for job seekers, offering comprehensiv
 - **Trushit Patel (Wilfrid Laurier University)** - Backend Developer & Team Lead
 - **Jainish Patel (McMaster University)** - Frontend Developer & UI/UX Designer
 - **Anmol Dhiman (Humber College)** - Backend Developer, Blockchain Specialist & Neurelo Integrator
-- **Mohammad Abdul Malik Fazal (Wilfrid Laurier University)** - Backend Developer & Database Manager ( Sleeps 12 hours and doesn't come on time)  
+- **Mohammad Abdul Malik Fazal (Wilfrid Laurier University)** - Backend Developer & Database Manager
 
 ## Technologies Used
 
@@ -25,3 +25,13 @@ Columbus is an innovative portal designed for job seekers, offering comprehensiv
 - Track job applications in an organized manner.
 
 Columbus aims to streamline the job application process, making it easier and more effective for users to manage their career advancement.
+
+## Images
+
+## Images
+
+![Image 1](images/1.png)
+![Image 2](images/2.png)
+![Image 3](images/3.png)
+![Image 4](images/4.png)
+![Image 5](images/5.png)

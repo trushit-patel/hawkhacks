@@ -15,15 +15,9 @@ const createAccessAndRefreshToken = async (userID) => {
 };
 
 const registerUser = async (req, res) => {
-    console.log(req.body);
-  const { username, email, password, skills} = req.body;
-//   if (
-//     [username, email, password, skills].some(
-//       (field) => field?.trim() === ""
-//     )
-//   ) {
-//     return res.status(400).send("All fields are required");
-//   }
+  console.log(req.body);
+  const { username, email, password, skills } = req.body;
+
   const userExist = await User.findOne({ email: email });
   if (userExist) {
     return res.status(409).send("User already exists");
@@ -33,7 +27,7 @@ const registerUser = async (req, res) => {
     username: username.toLowerCase(),
     email: email,
     password: password,
-    skills:skills
+    skills: skills,
   });
   const userCreated = await User.findById(user._id).select(
     "-password -refreshToken"
@@ -41,10 +35,12 @@ const registerUser = async (req, res) => {
   if (!userCreated) {
     return res.status(500).send("Something went wrong while creating a user");
   }
-  
-  return res
-    .status(201)
-    .json(new ApiResponse(201, userCreated, "User created Successfully"));
+
+  return res.status(201).json({
+    status: 200,
+    data: userCreated,
+    message: "User created Successfully",
+  });
 };
 
 const loginUser = async (req, res) => {
@@ -71,19 +67,18 @@ const loginUser = async (req, res) => {
   );
 
   return res
-  .status(200)
-  .cookie("accessToken", accessToken, options)
-  .cookie("refreshToken", refreshToken, options)
-  .json({
-    status: 200,
-    data: {
-      user: loggedUser,
-      accessToken,
-      refreshToken,
-    },
-    message: "User Logged Successfully"
-  });
-
+    .status(200)
+    .cookie("accessToken", accessToken, options)
+    .cookie("refreshToken", refreshToken, options)
+    .json({
+      status: 200,
+      data: {
+        user: loggedUser,
+        accessToken,
+        refreshToken,
+      },
+      message: "User Logged Successfully",
+    });
 };
 
 const logoutUser = async (req, res) => {
@@ -102,28 +97,28 @@ const logoutUser = async (req, res) => {
   };
 
   return res
-  .status(200)
-  .clearCookie("accessToken", options)
-  .clearCookie("refreshToken", options)
-  .json({
-    status: 200,
-    message: "User Logged Out"
-  });
+    .status(200)
+    .clearCookie("accessToken", options)
+    .clearCookie("refreshToken", options)
+    .json({
+      status: 200,
+      message: "User Logged Out",
+    });
 };
 
 const getProfile = async (req, res) => {
-    const user = await User.findById(req.user?._id).select(
-      "-password -refreshToken"
-    );
-    if (!user) {
-      return res.status(404).send("User not found");
-    }
-    return res.status(200).json({
-        status: 200,
-        message: "User Profile",
-        data: user
-      });
-  };
+  const user = await User.findById(req.user?._id).select(
+    "-password -refreshToken"
+  );
+  if (!user) {
+    return res.status(404).send("User not found");
+  }
+  return res.status(200).json({
+    status: 200,
+    message: "User Profile",
+    data: user,
+  });
+};
 
 const refreshToken = async (req, res) => {
   const incomingRefreshToken =
@@ -158,25 +153,24 @@ const refreshToken = async (req, res) => {
     user._id
   );
   return res
-  .status(200)
-  .cookie("accessToken", newAccessToken, options)
-  .cookie("refreshToken", newRefreshToken, options)
-  .json({
-    status: 200,
-    data: {
-      accessToken: newAccessToken,
-      refreshToken: newRefreshToken,
-    },
-    message: "Token Refreshed Successfully"
-  });
-
+    .status(200)
+    .cookie("accessToken", newAccessToken, options)
+    .cookie("refreshToken", newRefreshToken, options)
+    .json({
+      status: 200,
+      data: {
+        accessToken: newAccessToken,
+        refreshToken: newRefreshToken,
+      },
+      message: "Token Refreshed Successfully",
+    });
 };
 
 module.exports = {
-    createAccessAndRefreshToken,
-    registerUser,
-    loginUser,
-    logoutUser,
-    getProfile,
-    refreshToken
-  };
+  createAccessAndRefreshToken,
+  registerUser,
+  loginUser,
+  logoutUser,
+  getProfile,
+  refreshToken,
+};
