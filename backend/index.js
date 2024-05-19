@@ -38,45 +38,37 @@ const upload = multer({ storage, fileFilter });
 async function handleResumeRating(req, res) {
   try {
     const resume = req.file;
-    // Check if a PDF file is uploaded
+
     if (!resume) {
       return res.status(400).send("No file uploaded");
     }
 
-    // Parse the uploaded PDF file
     const result = await pdfParse(resume.buffer);
 
-    // Extract text from PDF and split into an array of lines
     const pdfTextArray = result.text
       .split("\n")
       .map((line) => line.trim())
       .filter((line) => line.length > 0);
 
-    // Get generative AI model
     const model = await genAI.getGenerativeModel({
       model: "gemini-1.5-flash-latest",
     });
 
-    // Create prompt for the generative model
     const prompt = "Rate the following resume:\n\n" + pdfTextArray.join("\n\n");
 
-    // Generate content using the generative model
     const response = await model.generateContent(prompt);
-
-    // Log the entire response to understand its structure
-    console.log("Full response:", JSON.stringify(response, null, 2));
-
-    // Ensure the response structure is as expected
     const candidates = response.response.candidates;
     if (candidates && candidates.length > 0) {
       const firstCandidate = candidates[0];
-      if (firstCandidate && firstCandidate.content && firstCandidate.content.parts && firstCandidate.content.parts.length > 0) {
-        // Extract text from the generated response
+      if (
+        firstCandidate &&
+        firstCandidate.content &&
+        firstCandidate.content.parts &&
+        firstCandidate.content.parts.length > 0
+      ) {
         const textBody = firstCandidate.content.parts[0].text;
-        console.log(textBody);
 
-        // Send the generated text as response
-        res.send(textBody);
+        res.status(200).send(textBody);
       } else {
         console.error("Unexpected candidate structure:", firstCandidate);
         res.status(500).send("Unexpected candidate structure from AI model");
@@ -91,22 +83,63 @@ async function handleResumeRating(req, res) {
   }
 }
 
-
-
 async function handleCoverLetterGeneration(req, res) {
-  // Implementation for cover letter generation
+  if (!req.file || !req.body.jobDescription) {
+    res.status(400).send("Missing required inputs");
+    return;
+  }
+
+  try {
+    const pdfData = await pdfParse(req.file.buffer);
+    const pdfTextArray = pdfData.text
+      .split("\n")
+      .map((line) => line.trim())
+      .filter((line) => line.length > 0);
+    const jobDescription = req.body.jobDescription;
+
+    const rewrittenCoverLetter = await rewriteCoverLetter(
+      pdfTextArray,
+      jobDescription
+    );
+    const textBody = rewrittenCoverLetter.candidates[0].content.parts[0].text;
+    console.log(textBody);
+    res.status(200).send(textBody);
+  } catch (err) {
+    console.error("Error:", err);
+    res.status(500).send("Error rewriting cover letter");
+  }
+}
+async function rewriteCoverLetter(pdfTextArray, jobDescription) {
+  const model = await genAI.getGenerativeModel({
+    model: "gemini-1.5-flash-latest",
+  });
+  const prompt = `Rewrite the following cover letter based on this job description:\n\nJob Description:\n${jobDescription}\n\nCover Letter:\n${pdfTextArray.join(
+    "\n\n"
+  )}`;
+
+  try {
+    const result = await model.generateContent(prompt);
+    return result.response;
+  } catch (error) {
+    console.error("Error generating content:", error);
+    throw error;
+  }
 }
 
 async function handleJobRolesSuggestion(req, res) {
   // Implementation for job roles suggestion
 }
 
-app.post("/rate-resume", upload.single("resume"), handleResumeRating);
+app.post("/reveiw-resume", upload.single("resume"), handleResumeRating);
+app.post("/test", (req, res) => {
+  res.status(200).send("Hello World");
+});
 app.post(
-  "/cover-letter-generator",
-  upload.single("resume"),
+  "/rewrite-cover-letter",
+  upload.single("coverLetter"),
   handleCoverLetterGeneration
 );
+
 app.post(
   "/job-roles-suggest",
   upload.single("resume"),
