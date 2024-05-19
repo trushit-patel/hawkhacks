@@ -5,8 +5,11 @@ const bodyParser = require("body-parser");
 const multer = require("multer");
 const pdfParse = require("pdf-parse");
 const { GoogleGenerativeAI } = require("@google/generative-ai");
+const { registerUser, loginUser, logoutUser, refreshToken, getProfile } = require("./user-auth");
 
 const genAI = new GoogleGenerativeAI(process.env.GOOGLE_API_KEY);
+const mongoose = require('./models/user');
+const verifyJWT = require('./middlewares/auth');
 
 const app = express();
 app.use(
@@ -15,7 +18,7 @@ app.use(
     credentials: true,
   })
 );
-
+ 
 app.use(express.json({ limit: "16kb" }));
 app.use(express.urlencoded({ extended: true, limit: "16kb" }));
 app.use(express.static("public"));
@@ -145,6 +148,12 @@ app.post(
   upload.single("resume"),
   handleJobRolesSuggestion
 );
+
+app.post("/register", registerUser);
+app.post("/login", loginUser);
+app.post("/logout", verifyJWT, logoutUser);
+app.post("/refresh-token",verifyJWT, refreshToken);
+app.get("/profile",verifyJWT, getProfile);
 
 const port = process.env.PORT || 5000;
 app.listen(port, () => {
